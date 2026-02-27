@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { ticketsApi, campaignsApi, channelsApi, deployApi } from "@/lib/api"
 import Link from "next/link"
+import { RAGCopilot } from "@/components/rag-copilot"
 import { ArrowLeft, Plus, Play, CheckCircle2, XCircle, AlertCircle, Clock } from "lucide-react"
 
 export default function TicketsPage() {
