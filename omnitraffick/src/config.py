@@ -33,6 +33,7 @@ class Settings(BaseSettings):
 
     # External APIs (Phase 4)
     meta_access_token: str | None = None
+    meta_ad_account_id: str | None = None
     tiktok_access_token: str | None = None
     google_ads_client_id: str | None = None
 
