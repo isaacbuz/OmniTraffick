@@ -56,6 +56,11 @@ def test_qa_taxonomy_valid(qa_engine):
     passed, reason = qa_engine.evaluate(ticket)
     assert passed is True
     assert reason is None
+    assert ticket.status == TicketStatus.READY_FOR_API
+    """Test that valid taxonomy passes QA."""
+    ticket = create_mock_ticket(campaign_name="DIS_US_META_2026_MoanaLaunch")
+    passed, reason = qa_engine.evaluate(ticket)
+    assert passed is True
     assert reason is None
     assert ticket.status == TicketStatus.READY_FOR_API
 

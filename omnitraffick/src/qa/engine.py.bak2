@@ -174,11 +174,15 @@ class QAEngine:
                 if field not in config:
                     return False, f"Missing required field for TikTok: {field}"
 
+        # Ensure targeting has geo data
+        if config.get("targeting") and not config["targeting"].get("geo_locations") and channel_name != "tiktok":
+            if channel_name == "tiktok" and not config.get("location_ids"):
+                return False, "TikTok targeting must include location_ids"
 
         # Ensure targeting has geo data (platform-specific)
         if channel_name == "meta":
-            if "targeting" in config and not config["targeting"].get("geo_locations"):
-                return False, "Meta targeting must include geographic locations"
+            if config.get("targeting") and not config["targeting"].get("geo_locations"):
+                return False, "Meta targeting must include geo_locations"
         elif channel_name == "tiktok":
             if not config.get("location_ids"):
                 return False, "TikTok payload must include location_ids"
