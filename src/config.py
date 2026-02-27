@@ -31,6 +31,17 @@ class Settings(BaseSettings):
     celery_broker_url: str = "redis://localhost:6379/0"
     celery_result_backend: str = "redis://localhost:6379/0"
 
+    # CM360 Ad Server (Phase 2)
+    cm360_access_token: str | None = None
+    cm360_profile_id: str | None = None
+    cm360_advertiser_id: str | None = None
+    cm360_site_id: str | None = None
+    
+    # Adobe Launch Tag Manager (Phase 7)
+    adobe_launch_api_key: str | None = None
+    adobe_org_id: str | None = None
+    adobe_launch_property_id: str | None = None
+    
     # External APIs (Phase 4)
     meta_access_token: str | None = None
     meta_ad_account_id: str | None = None

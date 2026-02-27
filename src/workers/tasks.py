@@ -10,6 +10,8 @@ from src.database import SessionLocal
 from src.models.ticket import Ticket, TicketStatus
 from src.orchestration.translators import get_translator
 from src.config import settings
+from src.adserver.cm360 import CM360Client
+from src.tracking.adobe_launch import AdobeLaunchClient
 import asyncio
 from src.websocket.manager import notify_deployment_started, notify_deployment_completed, notify_deployment_failed
 
@@ -67,6 +69,35 @@ def deploy_payload_to_platform(self, ticket_id: str) -> dict:
     if ticket.status != TicketStatus.READY_FOR_API:
         logger.error(f"Ticket {ticket_id} status is {ticket.status}, expected READY_FOR_API")
         raise ValueError(f"Ticket must be READY_FOR_API, current status: {ticket.status}")
+    
+    # STEP 1: Create CM360 tracking tags
+    try:
+        cm360 = CM360Client()
+        cm360_data = cm360.create_campaign_with_tracking(
+            campaign_name=ticket.campaign.name,
+            advertiser_id=getattr(settings, 'cm360_advertiser_id', 'ADVERTISER_ID'),
+            site_id=getattr(settings, 'cm360_site_id', 'SITE_ID'),
+        )
+        
+        logger.info(f"CM360 tracking created: {cm360_data}")
+        
+        # STEP 2: Deploy pixel to Adobe Launch
+        adobe = AdobeLaunchClient()
+        adobe_result = adobe.deploy_cm360_pixel(
+            campaign_name=ticket.campaign.name,
+            cm360_pixel_url=cm360_data["impression_pixel"],
+        )
+        
+        logger.info(f"Adobe Launch deployed: {adobe_result}")
+        
+        # Inject CM360 tags into payload config
+        ticket.payload_config["cm360_impression_pixel"] = cm360_data["impression_pixel"]
+        ticket.payload_config["cm360_click_tracker"] = cm360_data["click_tracker"]
+        ticket.payload_config["cm360_campaign_id"] = cm360_data["campaign_id"]
+        ticket.payload_config["adobe_launch_rule_id"] = adobe_result["rule_id"]
+        
+    except Exception as e:
+        logger.warning(f"CM360/Adobe Launch setup failed (non-blocking): {e}")
     
     # Get platform details
     platform_name = ticket.channel.platform_name.lower()
